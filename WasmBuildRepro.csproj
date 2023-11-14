@@ -5,6 +5,8 @@
 		<OutputType>Exe</OutputType>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<WasmMainJSPath>main.mjs</WasmMainJSPath>
+
+		<WasmRuntimeAssetsLocation>./</WasmRuntimeAssetsLocation>
 	</PropertyGroup>
 
 	<Target Name="InitializeWasmAppDir" AfterTargets="WasmBuildApp">
@@ -13,17 +15,17 @@
 		</PropertyGroup>
 	</Target>
 
-	<Target Name="WriteMyFile" AfterTargets="WasmBuildApp" DependsOnTargets="InitializeWasmAppDir">
-		<Message Importance="high" Text="Running WriteMyFile target after WasmBuildApp." />
-		<Exec Command="echo someText &gt; $(WasmAppDir)/filename.txt" />
+	<Target Name="__WriteMyFile" AfterTargets="WasmBuildApp" DependsOnTargets="InitializeWasmAppDir">
+		<Message Importance="high" Text="Running WriteMyFile target after WasmBuildApp. WasmAppDir = $(WasmAppDir). This message appears when doing either a build or a publish." />
+		<Exec Command="md $(WasmAppDir)" Condition="!Exists('$(WasmAppDir)')" />
+		<Exec Command="echo someText &gt; $(WasmAppDir)\testfile.txt" />
 	</Target>
 
-	<Target Name="WriteMyFileFromPublish" AfterTargets="WasmTriggerPublishApp" DependsOnTargets="InitializeWasmAppDir">
-		<Message Importance="high" Text="Running WriteMyFile target after WasmTriggerPublishApp." />
-		<Exec Command="echo someText &gt; $(WasmAppDir)/filename.txt" />
+	<Target Name="__PublishMessage" AfterTargets="WasmTriggerPublishApp" DependsOnTargets="InitializeWasmAppDir">
+		<Message Importance="high" Text="Message from publish!! This message does not appear when doing a build." />
 	</Target>
 
-	<Target Name="CheckDepsTouch" AfterTargets="WriteMyFileFromPublish" Condition="!Exists('$(WasmAppDir)/testfile.txt')">
-		<Message Importance="high" Text="testfile.txt (created via Touch) does not exist." />
+	<Target Name="__CheckDeps" AfterTargets="WasmTriggerPublishApp" DependsOnTargets="InitializeWasmAppDir" Condition="!Exists('$(WasmAppDir)\testfile.txt')">
+		<Message Importance="high" Text="testfile.txt does not exist." />
 	</Target>
 </Project>
