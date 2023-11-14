@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+		<OutputType>Exe</OutputType>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<WasmMainJSPath>main.mjs</WasmMainJSPath>
+	</PropertyGroup>
+
+	<Target Name="InitializeWasmAppDir" AfterTargets="WasmBuildApp">
+		<PropertyGroup>
+			<WasmAppDir>$([MSBuild]::NormalizePath('$(OutputPath)/AppBundle'))</WasmAppDir>
+		</PropertyGroup>
+	</Target>
+
+	<Target Name="WriteMyFile" AfterTargets="WasmBuildApp" DependsOnTargets="InitializeWasmAppDir">
+		<Message Importance="high" Text="Running WriteMyFile target after WasmBuildApp." />
+		<Exec Command="echo someText &gt; $(WasmAppDir)/filename.txt" />
+	</Target>
+
+	<Target Name="WriteMyFileFromPublish" AfterTargets="WasmTriggerPublishApp" DependsOnTargets="InitializeWasmAppDir">
+		<Message Importance="high" Text="Running WriteMyFile target after WasmTriggerPublishApp." />
+		<Exec Command="echo someText &gt; $(WasmAppDir)/filename.txt" />
+	</Target>
+
+	<Target Name="CheckDepsTouch" AfterTargets="WriteMyFileFromPublish" Condition="!Exists('$(WasmAppDir)/testfile.txt')">
+		<Message Importance="high" Text="testfile.txt (created via Touch) does not exist." />
+	</Target>
+</Project>
